@@ -34,13 +34,7 @@ export default {
         <div class="flex flex-col items-center">
             <h1 class="text-xl md:text-2xl font-bold text-slate-400 uppercase tracking-widest mb-2">Time until September 22</h1>
             <div id="countdown" class="hero-text font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-teal-300 to-emerald-400 font-mono drop-shadow-lg">
-                00:00:00:00
-            </div>
-            <div class="flex gap-4 md:gap-12 text-xs md:text-sm font-bold text-slate-500 uppercase mt-2 w-full justify-center px-4">
-                <span>Days</span>
-                <span>Hours</span>
-                <span>Minutes</span>
-                <span>Seconds</span>
+                00<span>Days</span>00<span>Hours</span>00<span>Minutes</span>00<span>Seconds</span>
             </div>
         </div>
 
@@ -67,18 +61,7 @@ export default {
     </main>
 
     <script>
-        // Target: Sept 22 of current/upcoming year
-        const getNextSept22 = () => {
-            const now = new Date();
-            let year = now.getFullYear();
-            let target = new Date(year, 8, 22, 0, 0, 0); // Month 8 = September
-            if (now > target) {
-                target = new Date(year + 1, 8, 22, 0, 0, 0);
-            }
-            return target;
-        };
-
-        const targetDate = getNextSept22();
+        const targetDate = new Date(Date.UTC(2026, 8, 22, 13, 0, 0));
         const DC_COORDS = { lat: 38.8951, lon: -77.0364, name: "Washington, DC" };
 
         // State Capitals Database
@@ -140,18 +123,17 @@ export default {
         function updateCountdown() {
             const now = new Date().getTime();
             const distance = targetDate.getTime() - now;
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
 
-            if (distance < 0) {
-                countdownEl.innerHTML = "SEPTEMBER 22 IS HERE";
+            if (distance < 0 && days > -35) {
+                countdownEl.innerHTML = " 22 TUESDAY IS HERE";
                 return;
             }
 
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            countdownEl.innerHTML = \`\${String(days).padStart(2, '0')}:\${String(hours).padStart(2, '0')}:\${String(minutes).padStart(2, '0')}:\${String(seconds).padStart(2, '0')}\`;
+            countdownEl.innerHTML = \`\${String(days).padStart(2, '0')}<span>Days</span>\${String(hours).padStart(2, '0')}<span>Hours</span>\${String(minutes).padStart(2, '0')}<span>Minutes</span>\${String(seconds).padStart(2, '0')}<span>Seconds</span>\`;
         }
         setInterval(updateCountdown, 1000);
         updateCountdown();
