@@ -24,6 +24,35 @@ export default {
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        .unit-tag {
+            position: relative;
+            display: inline-block;
+            margin-right: 0.5em; /* Space for the tag */
+            width: 2em;
+            padding-top: 0.5em;
+            padding-bottom: 0.5em;
+        }
+        .unit-tag::after {
+            content: attr(data-unit);
+            position: absolute;
+            top: 2.5em;
+            right: -2em;
+            width: 4em;
+            height: 1em;
+            
+            /* Tag Styling */
+            font-size: 0.3em;
+            color: gray;
+            transform: rotate(90deg);
+            transform-origin: bottom;
+        }
+        .unit-tag.med::after {
+            font-size: 0.3em;
+        }
+        .unit-tag.long::after {
+            font-size: 0.2em;
+            top: 4.2em;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 text-center">
@@ -133,7 +162,10 @@ export default {
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            countdownEl.innerHTML = \`\${String(days).padStart(2, '0')}&nbsp;<span>Days</span><br/>\${String(hours).padStart(2, '0')}&nbsp;<span>Hours</span><br/>\${String(minutes).padStart(2, '0')}&nbsp;<span>Minutes</span><br/>\${String(seconds).padStart(2, '0')}&nbsp;<span>Seconds</span>\`;
+            const digit = (num) => String(num).padStart(2, '0');
+            const seg = (time, unit, long=false) => \`<div class="unit-tag\${long?" long ":' '}\${unit.toLowerCase()}" data-unit="\${unit}">\${digit(time)}</div>\`;
+
+            countdownEl.innerHTML = \`\${seg(days, 'Days')}\${seg(hours, 'Hours')}\${seg(minutes, 'Minutes',1)}\${seg(seconds, 'Seconds',1)}\`           
         }
         setInterval(updateCountdown, 1000);
         updateCountdown();
