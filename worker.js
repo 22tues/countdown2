@@ -45,7 +45,7 @@ export default {
         </div>
 
         <!-- ACTION SECTION -->
-        <div class="glass-panel w-full max-w-2xl rounded-2xl p-6 md:p-8 shadow-2xl">
+        <div class="glass-panel w-full max-w-3xl rounded-2xl p-6 md:p-8 shadow-2xl">
             <h2 class="text-2xl md:text-3xl font-bold mb-4">How are you getting to DC?</h2>
             
             <form id="travel-form" class="flex flex-col sm:flex-row gap-3 w-full">
@@ -194,6 +194,9 @@ export default {
                 const userLon = parseFloat(place.lon);
                 const userState = place.address.state_code ? place.address.state_code.toUpperCase() : null;
                 const formattedName = \`\${place.address.city || place.address.town || place.name}, \${userState || ''}\`;
+                
+                // For Craigslist query (restrict search strictly to rideshare boards)
+                const clSearchName = place.address.city || place.address.town || place.name;
 
                 // Compute time remaining vs drive requirements
                 const now = new Date();
@@ -206,9 +209,10 @@ export default {
                 const totalJourneyHours = driveHours + (overnightsNeeded * 10);
                 const gasCost = Math.round((dcMiles / 25) * 3.65); // 25 MPG @ $3.65/gal
 
-                // Flight date target (Day before event)
+                // Date targets (Day before event)
                 const targetYear = targetDate.getFullYear();
-                const flightDateStr = \`\${targetYear}-09-21\`;
+                const targetMonth = String(targetDate.getMonth() + 1).padStart(2, '0');
+                const flightDateStr = \`\${targetYear}-\${targetMonth}-21\`; 
 
                 // Render logic
                 if (hoursLeftToDeadline >= totalJourneyHours) {
@@ -234,7 +238,7 @@ export default {
                                 </div>
                                 <div class="bg-slate-800/80 p-2 rounded border border-slate-700">
                                     <div class="text-xs text-slate-400">Est. Gas (1-Way)</div>
-                                    <div class="text-lg font-bold font-mono text-emerald-400 font-mono font-bold">\$\${gasCost}</div>
+                                    <div class="text-lg font-bold font-mono text-emerald-400">\$\${gasCost}</div>
                                 </div>
                                 <div class="bg-slate-800/80 p-2 rounded border border-slate-700">
                                     <div class="text-xs text-slate-400">Time Window</div>
@@ -242,21 +246,29 @@ export default {
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm font-semibold pt-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm font-semibold pt-2">
                                 <a href="https://www.google.com/travel/flights?q=flights+from+\${encodeURIComponent(formattedName)}+to+Washington+DC+on+\${flightDateStr}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
                                     <span>✈️ Flight Search (\${flightDateStr})</span>
                                     <span class="text-xs text-slate-400">Google Flights ↗</span>
                                 </a>
-                                <a href="https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=Washington,+DC" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
-                                    <span>🚗 Driving Route & Gas Stations</span>
-                                    <span class="text-xs text-slate-400">Google Maps ↗</span>
+                                <a href="https://www.wanderu.com/en-us/depart/\${encodeURIComponent(formattedName)}/Washington%2C%20DC%2C%20USA/\${flightDateStr}/" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                    <span>🚌 Bus Routes (Greyhound/etc)</span>
+                                    <span class="text-xs text-slate-400">Wanderu ↗</span>
                                 </a>
                                 <a href="https://www.amtrak.com/deals/search?from=\${encodeURIComponent(formattedName)}&to=WAS" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
                                     <span>🚆 Amtrak Train Schedule</span>
                                     <span class="text-xs text-slate-400">Amtrak ↗</span>
                                 </a>
+                                <a href="https://www.google.com/search?q=site:craigslist.org/rid+rideshare+\${encodeURIComponent(clSearchName)}+\${userState || ''}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                    <span>🤝 Local Rideshare Board</span>
+                                    <span class="text-xs text-slate-400">Craigslist ↗</span>
+                                </a>
+                                <a href="https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=Washington,+DC" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                    <span>🚗 Driving Route & Gas Stops</span>
+                                    <span class="text-xs text-slate-400">Google Maps ↗</span>
+                                </a>
                                 <a href="https://www.gasbuddy.com/tripcalculator" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
-                                    <span>⛽ Exact Gas Buddy Calculator</span>
+                                    <span>⛽ Exact Gas Calculator</span>
                                     <span class="text-xs text-slate-400">GasBuddy ↗</span>
                                 </a>
                             </div>
@@ -291,9 +303,16 @@ export default {
                                     </div>
                                 </div>
 
-                                <a href="https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=\${encodeURIComponent(capital.name)}" target="_blank" class="block text-center p-3 bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold rounded transition">
-                                    🏛️ Directions to \${capital.name} State Capitol
-                                </a>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm font-semibold pt-2">
+                                    <a href="https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=\${encodeURIComponent(capital.name)}" target="_blank" class="flex items-center justify-between p-3 bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold rounded transition">
+                                        <span>🏛️ Directions to \${capital.name}</span>
+                                        <span class="text-xs opacity-75">Google Maps ↗</span>
+                                    </a>
+                                    <a href="https://www.google.com/search?q=site:craigslist.org/rid+rideshare+\${encodeURIComponent(clSearchName)}+\${userState || ''}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition border border-slate-700">
+                                        <span>🤝 Local Rideshare Board</span>
+                                        <span class="text-xs text-slate-400">Craigslist ↗</span>
+                                    </a>
+                                </div>
                             </div>
                         \`;
                     } else {
