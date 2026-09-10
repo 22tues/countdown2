@@ -206,8 +206,8 @@ export default {
                 const dcMiles = calculateRoadDistance(userLat, userLon, DC_COORDS.lat, DC_COORDS.lon);
                 const driveHours = Math.round((dcMiles / 62) * 10) / 10; // Avg 62 mph
                 const overnightsNeeded = Math.floor(driveHours / 9); // Night rest for every 9 hrs drive
-                const totalJourneyHours = driveHours + (overnightsNeeded * 10);
-                const gasCost = Math.round((dcMiles / 25) * 3.65); // 25 MPG @ $3.65/gal
+                const totalJourneyHours = driveHours + (overnightsNeeded * 15);
+                const gasCost = Math.round((dcMiles / 25) * 4.268); // 25 MPG @ $4.268/gal
 
                 // Date targets (Day before event)
                 const targetYear = targetDate.getFullYear();
@@ -247,6 +247,15 @@ export default {
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm font-semibold pt-2">
+                            
+                                <a href="https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=Washington,+DC" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                    <span>🚗 Driving Route & Gas Stops</span>
+                                    <span class="text-xs text-slate-400">Google Maps ↗</span>
+                                </a>
+                                <a href="https://www.gasbuddy.com/tripcostcalculator" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                    <span>⛽ Exact Gas Calculator</span>
+                                    <span class="text-xs text-slate-400">GasBuddy ↗</span>
+                                </a>
                                 <a href="https://www.google.com/travel/flights?q=flights+from+\${encodeURIComponent(formattedName)}+to+Washington+DC+on+\${flightDateStr}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
                                     <span>✈️ Flight Search (\${flightDateStr})</span>
                                     <span class="text-xs text-slate-400">Google Flights ↗</span>
@@ -259,17 +268,9 @@ export default {
                                     <span>🚆 Amtrak Train Schedule</span>
                                     <span class="text-xs text-slate-400">Amtrak ↗</span>
                                 </a>
-                                <a href="https://www.google.com/search?q=site:craigslist.org/rid+rideshare+\${encodeURIComponent(clSearchName)}+\${userState || ''}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                <a href="https://www.google.com/search?q=site:craigslist.org+rideshare+\${encodeURIComponent(clSearchName)}+\${userState || ''}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
                                     <span>🤝 Local Rideshare Board</span>
                                     <span class="text-xs text-slate-400">Craigslist ↗</span>
-                                </a>
-                                <a href="https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=Washington,+DC" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
-                                    <span>🚗 Driving Route & Gas Stops</span>
-                                    <span class="text-xs text-slate-400">Google Maps ↗</span>
-                                </a>
-                                <a href="https://www.gasbuddy.com/tripcalculator" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
-                                    <span>⛽ Exact Gas Calculator</span>
-                                    <span class="text-xs text-slate-400">GasBuddy ↗</span>
                                 </a>
                             </div>
                         </div>
@@ -308,7 +309,7 @@ export default {
                                         <span>🏛️ Directions to \${capital.name}</span>
                                         <span class="text-xs opacity-75">Google Maps ↗</span>
                                     </a>
-                                    <a href="https://www.google.com/search?q=site:craigslist.org/rid+rideshare+\${encodeURIComponent(clSearchName)}+\${userState || ''}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition border border-slate-700">
+                                    <a href="https://www.google.com/search?q=site:craigslist.org+rideshare+\${encodeURIComponent(clSearchName)}+\${userState || ''}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition border border-slate-700">
                                         <span>🤝 Local Rideshare Board</span>
                                         <span class="text-xs text-slate-400">Craigslist ↗</span>
                                     </a>
