@@ -34,7 +34,7 @@ export default {
         <div class="flex flex-col items-center">
             <h1 class="text-xl md:text-2xl font-bold text-slate-400 uppercase tracking-widest mb-2">Time until September 22</h1>
             <div id="countdown" class="hero-text font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-teal-300 to-emerald-400 font-mono drop-shadow-lg">
-                00<span>Days</span>00<span>Hours</span>00<span>Minutes</span>00<span>Seconds</span>
+                00<span>Days</span><br/>00<span>Hours</span><br/>00<span>Minutes</span><br/>00<span>Seconds</span>
             </div>
         </div>
 
@@ -133,7 +133,7 @@ export default {
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            countdownEl.innerHTML = \`\${String(days).padStart(2, '0')}<span>Days</span>\${String(hours).padStart(2, '0')}<span>Hours</span>\${String(minutes).padStart(2, '0')}<span>Minutes</span>\${String(seconds).padStart(2, '0')}<span>Seconds</span>\`;
+            countdownEl.innerHTML = \`\${String(days).padStart(2, '0')}<span>Days</span><br/>\${String(hours).padStart(2, '0')}<span>Hours</span><br/>\${String(minutes).padStart(2, '0')}<span>Minutes</span><br/>\${String(seconds).padStart(2, '0')}<span>Seconds</span>\`;
         }
         setInterval(updateCountdown, 1000);
         updateCountdown();
