@@ -16,7 +16,7 @@ export default {
             color: #f8fafc;
         }
         .hero-text {
-            font-size: clamp(3rem, 10vw, 8rem);
+            font-size: clamp(2.5rem, 8vw, 7rem);
             line-height: 1.1;
         }
         .glass-panel {
@@ -28,12 +28,12 @@ export default {
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 text-center">
 
-    <main class="w-full max-w-4xl mx-auto flex flex-col items-center gap-8">
+    <main class="w-full max-w-4xl mx-auto flex flex-col items-center gap-8 my-8">
         
         <!-- HERO COUNTDOWN -->
         <div class="flex flex-col items-center">
-            <h1 class="text-xl md:text-3xl font-bold text-slate-400 uppercase tracking-widest mb-2">Time until September 22</h1>
-            <div id="countdown" class="hero-text font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 font-mono drop-shadow-lg">
+            <h1 class="text-xl md:text-2xl font-bold text-slate-400 uppercase tracking-widest mb-2">Time until September 22</h1>
+            <div id="countdown" class="hero-text font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-teal-300 to-emerald-400 font-mono drop-shadow-lg">
                 00:00:00:00
             </div>
             <div class="flex gap-4 md:gap-12 text-xs md:text-sm font-bold text-slate-500 uppercase mt-2 w-full justify-center px-4">
@@ -45,50 +45,104 @@ export default {
         </div>
 
         <!-- ACTION SECTION -->
-        <div class="glass-panel w-full max-w-2xl rounded-2xl p-6 md:p-10 mt-8 shadow-2xl">
-            <h2 class="text-3xl md:text-4xl font-bold mb-6">How are you getting to DC?</h2>
+        <div class="glass-panel w-full max-w-2xl rounded-2xl p-6 md:p-8 shadow-2xl">
+            <h2 class="text-2xl md:text-3xl font-bold mb-4">How are you getting to DC?</h2>
             
             <form id="travel-form" class="flex flex-col sm:flex-row gap-3 w-full">
                 <input 
                     type="text" 
                     id="location" 
-                    placeholder="Enter your city & state (e.g., Chicago, IL)" 
+                    placeholder="Enter City & State or Zip (e.g. Seattle, WA)" 
                     required
                     class="flex-1 px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 >
-                <button type="submit" class="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors">
-                    Check Options
+                <button type="submit" id="submit-btn" class="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors flex items-center justify-center gap-2">
+                    Calculate Trip
                 </button>
             </form>
 
             <!-- DYNAMIC RESULTS -->
-            <div id="results" class="mt-8 text-left hidden flex-col gap-4 transition-all"></div>
+            <div id="results" class="mt-6 text-left hidden flex-col gap-4"></div>
         </div>
     </main>
 
     <script>
-        // Set target date dynamically to the upcoming Sept 22
+        // Target: Sept 22 of current/upcoming year
         const getNextSept22 = () => {
             const now = new Date();
             let year = now.getFullYear();
-            let target = new Date(year, 8, 22, 0, 0, 0); // Month is 0-indexed (8 = Sept)
+            let target = new Date(year, 8, 22, 0, 0, 0); // Month 8 = September
             if (now > target) {
                 target = new Date(year + 1, 8, 22, 0, 0, 0);
             }
-            return target.getTime();
+            return target;
         };
 
         const targetDate = getNextSept22();
+        const DC_COORDS = { lat: 38.8951, lon: -77.0364, name: "Washington, DC" };
 
-        // Update countdown every second
+        // State Capitals Database
+        const STATE_CAPITALS = {
+            "AL": { name: "Montgomery, AL", lat: 32.3792, lon: -86.3077 },
+            "AK": { name: "Juneau, AK", lat: 58.3019, lon: -134.4197 },
+            "AZ": { name: "Phoenix, AZ", lat: 33.4484, lon: -112.0740 },
+            "AR": { name: "Little Rock, AR", lat: 34.7465, lon: -92.2896 },
+            "CA": { name: "Sacramento, CA", lat: 38.5816, lon: -121.4944 },
+            "CO": { name: "Denver, CO", lat: 39.7392, lon: -104.9903 },
+            "CT": { name: "Hartford, CT", lat: 41.7658, lon: -72.6734 },
+            "DE": { name: "Dover, DE", lat: 39.1582, lon: -75.5244 },
+            "FL": { name: "Tallahassee, FL", lat: 30.4383, lon: -84.2807 },
+            "GA": { name: "Atlanta, GA", lat: 33.7490, lon: -84.3880 },
+            "HI": { name: "Honolulu, HI", lat: 21.3069, lon: -157.8583 },
+            "ID": { name: "Boise, ID", lat: 43.6150, lon: -116.2023 },
+            "IL": { name: "Springfield, IL", lat: 39.7817, lon: -89.6501 },
+            "IN": { name: "Indianapolis, IN", lat: 39.7684, lon: -86.1581 },
+            "IA": { name: "Des Moines, IA", lat: 41.5868, lon: -93.6250 },
+            "KS": { name: "Topeka, KS", lat: 39.0473, lon: -95.6752 },
+            "KY": { name: "Frankfort, KY", lat: 38.2009, lon: -84.8733 },
+            "LA": { name: "Baton Rouge, LA", lat: 30.4515, lon: -91.1871 },
+            "ME": { name: "Augusta, ME", lat: 44.3106, lon: -69.7795 },
+            "MD": { name: "Annapolis, MD", lat: 38.9784, lon: -76.4922 },
+            "MA": { name: "Boston, MA", lat: 42.3601, lon: -71.0589 },
+            "MI": { name: "Lansing, MI", lat: 42.7325, lon: -84.5555 },
+            "MN": { name: "St. Paul, MN", lat: 44.9537, lon: -93.0900 },
+            "MS": { name: "Jackson, MS", lat: 32.2988, lon: -90.1848 },
+            "MO": { name: "Jefferson City, MO", lat: 38.5767, lon: -92.1735 },
+            "MT": { name: "Helena, MT", lat: 46.5891, lon: -112.0391 },
+            "NE": { name: "Lincoln, NE", lat: 40.8136, lon: -96.7026 },
+            "NV": { name: "Carson City, NV", lat: 39.1638, lon: -119.7674 },
+            "NH": { name: "Concord, NH", lat: 43.2081, lon: -71.5376 },
+            "NJ": { name: "Trenton, NJ", lat: 40.2206, lon: -74.7597 },
+            "NM": { name: "Santa Fe, NM", lat: 35.6870, lon: -105.9378 },
+            "NY": { name: "Albany, NY", lat: 42.6526, lon: -73.7562 },
+            "NC": { name: "Raleigh, NC", lat: 35.7796, lon: -78.6382 },
+            "ND": { name: "Bismarck, ND", lat: 46.8083, lon: -100.7837 },
+            "OH": { name: "Columbus, OH", lat: 39.9612, lon: -82.9988 },
+            "OK": { name: "Oklahoma City, OK", lat: 35.4676, lon: -97.5164 },
+            "OR": { name: "Salem, OR", lat: 44.9429, lon: -123.0351 },
+            "PA": { name: "Harrisburg, PA", lat: 40.2732, lon: -76.8867 },
+            "RI": { name: "Providence, RI", lat: 41.8240, lon: -71.4128 },
+            "SC": { name: "Columbia, SC", lat: 34.0007, lon: -81.0348 },
+            "SD": { name: "Pierre, SD", lat: 44.3683, lon: -100.3510 },
+            "TN": { name: "Nashville, TN", lat: 36.1627, lon: -86.7816 },
+            "TX": { name: "Austin, TX", lat: 30.2672, lon: -97.7431 },
+            "UT": { name: "Salt Lake City, UT", lat: 40.7608, lon: -111.8910 },
+            "VT": { name: "Montpelier, VT", lat: 44.2601, lon: -72.5754 },
+            "VA": { name: "Richmond, VA", lat: 37.5407, lon: -77.4360 },
+            "WA": { name: "Olympia, WA", lat: 47.0379, lon: -122.9007 },
+            "WV": { name: "Charleston, WV", lat: 38.3498, lon: -81.6326 },
+            "WI": { name: "Madison, WI", lat: 43.0731, lon: -89.4012 },
+            "WY": { name: "Cheyenne, WY", lat: 41.1400, lon: -104.8202 }
+        };
+
+        // Countdown Timer Logic
         const countdownEl = document.getElementById('countdown');
-        
         function updateCountdown() {
             const now = new Date().getTime();
-            const distance = targetDate - now;
+            const distance = targetDate.getTime() - now;
 
             if (distance < 0) {
-                countdownEl.innerHTML = "THE TIME IS NOW";
+                countdownEl.innerHTML = "SEPTEMBER 22 IS HERE";
                 return;
             }
 
@@ -97,91 +151,182 @@ export default {
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            // Pad with leading zeros
-            const d = String(days).padStart(2, '0');
-            const h = String(hours).padStart(2, '0');
-            const m = String(minutes).padStart(2, '0');
-            const s = String(seconds).padStart(2, '0');
-
-            countdownEl.innerHTML = \`\${d}:\${h}:\${m}:\${s}\`;
+            countdownEl.innerHTML = \`\${String(days).padStart(2, '0')}:\${String(hours).padStart(2, '0')}:\${String(minutes).padStart(2, '0')}:\${String(seconds).padStart(2, '0')}\`;
         }
-
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
-        // Handle Form Submission and Travel Logic
-        document.getElementById('travel-form').addEventListener('submit', (e) => {
+        // Distance Calculation (Haversine formula * 1.3 driving factor)
+        function calculateRoadDistance(lat1, lon1, lat2, lon2) {
+            const R = 3958.8; // Miles
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const straightMiles = R * c;
+            return Math.round(straightMiles * 1.3); // 30% winding road correction
+        }
+
+        // Form Handler
+        document.getElementById('travel-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const location = document.getElementById('location').value.trim();
-            const encodedLocation = encodeURIComponent(location);
+            const input = document.getElementById('location').value.trim();
+            const btn = document.getElementById('submit-btn');
             const resultsDiv = document.getElementById('results');
-            
-            const now = new Date().getTime();
-            const hoursLeft = (targetDate - now) / (1000 * 60 * 60);
 
-            let htmlContent = '';
+            btn.disabled = true;
+            btn.innerHTML = 'Calculating...';
+            resultsDiv.classList.add('hidden');
 
-            // LOGIC: 
-            // > 48 hours: Plenty of time for DC
-            // 12 - 48 hours: Not enough time for DC, head to State Capital
-            // < 12 hours: Not enough time to travel safely, strike/boycott
-            
-            if (hoursLeft > 48) {
-                htmlContent = \`
-                    <div class="p-4 bg-emerald-500/20 border border-emerald-500/50 rounded-lg">
-                        <h3 class="text-xl font-bold text-emerald-400 mb-2">There's still time to get to DC!</h3>
-                        <p class="text-sm text-slate-300 mb-4">Check your travel options from <strong>\${location}</strong> below:</p>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <a href="https://www.google.com/travel/flights?q=flights+from+\${encodedLocation}+to+Washington+DC" target="_blank" class="flex items-center gap-2 p-3 bg-slate-800 rounded hover:bg-slate-700 transition">
-                                ✈️ Check Flights
-                            </a>
-                            <a href="https://www.google.com/maps/dir/?api=1&origin=\${encodedLocation}&destination=Washington,+DC" target="_blank" class="flex items-center gap-2 p-3 bg-slate-800 rounded hover:bg-slate-700 transition">
-                                🚗 Estimate Drive & Gas
-                            </a>
-                            <a href="https://www.amtrak.com" target="_blank" class="flex items-center gap-2 p-3 bg-slate-800 rounded hover:bg-slate-700 transition">
-                                🚆 Check Trains (Amtrak)
-                            </a>
-                            <a href="https://www.greyhound.com" target="_blank" class="flex items-center gap-2 p-3 bg-slate-800 rounded hover:bg-slate-700 transition">
-                                🚌 Check Buses
-                            </a>
+            try {
+                // Free Geocoding via OpenStreetMap
+                const geoRes = await fetch(\`https://nominatim.openstreetmap.org/search?q=\${encodeURIComponent(input)}&countrycodes=us&format=json&addressdetails=1\`);
+                const geoData = await geoRes.json();
+
+                if (!geoData || geoData.length === 0) {
+                    throw new Error("Location not found. Please try entering a US City and State.");
+                }
+
+                const place = geoData[0];
+                const userLat = parseFloat(place.lat);
+                const userLon = parseFloat(place.lon);
+                const userState = place.address.state_code ? place.address.state_code.toUpperCase() : null;
+                const formattedName = \`\${place.address.city || place.address.town || place.name}, \${userState || ''}\`;
+
+                // Compute time remaining vs drive requirements
+                const now = new Date();
+                const hoursLeftToDeadline = (targetDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+                // Calculations to DC
+                const dcMiles = calculateRoadDistance(userLat, userLon, DC_COORDS.lat, DC_COORDS.lon);
+                const driveHours = Math.round((dcMiles / 62) * 10) / 10; // Avg 62 mph
+                const overnightsNeeded = Math.floor(driveHours / 9); // Night rest for every 9 hrs drive
+                const totalJourneyHours = driveHours + (overnightsNeeded * 10);
+                const gasCost = Math.round((dcMiles / 25) * 3.65); // 25 MPG @ $3.65/gal
+
+                // Flight date target (Day before event)
+                const targetYear = targetDate.getFullYear();
+                const flightDateStr = \`\${targetYear}-09-21\`;
+
+                // Render logic
+                if (hoursLeftToDeadline >= totalJourneyHours) {
+                    // Option A: Enough time for DC
+                    resultsDiv.innerHTML = \`
+                        <div class="p-5 bg-emerald-950/60 border border-emerald-500/40 rounded-xl space-y-4">
+                            <div class="flex items-center justify-between border-b border-emerald-800/50 pb-3">
+                                <div>
+                                    <h3 class="text-xl font-bold text-emerald-400">Route Feasible: Washington, DC</h3>
+                                    <p class="text-xs text-slate-300">Origin: <strong>\${formattedName}</strong> (\${dcMiles} miles to DC)</p>
+                                </div>
+                                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 font-mono text-xs rounded-full font-bold">Time Available</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center my-2">
+                                <div class="bg-slate-800/80 p-2 rounded border border-slate-700">
+                                    <div class="text-xs text-slate-400">Drive Time</div>
+                                    <div class="text-lg font-bold font-mono">\${driveHours} hrs</div>
+                                </div>
+                                <div class="bg-slate-800/80 p-2 rounded border border-slate-700">
+                                    <div class="text-xs text-slate-400">Overnight Stops</div>
+                                    <div class="text-lg font-bold font-mono">\${overnightsNeeded} night\${overnightsNeeded === 1 ? '' : 's'}</div>
+                                </div>
+                                <div class="bg-slate-800/80 p-2 rounded border border-slate-700">
+                                    <div class="text-xs text-slate-400">Est. Gas (1-Way)</div>
+                                    <div class="text-lg font-bold font-mono text-emerald-400 font-mono font-bold">\$\${gasCost}</div>
+                                </div>
+                                <div class="bg-slate-800/80 p-2 rounded border border-slate-700">
+                                    <div class="text-xs text-slate-400">Time Window</div>
+                                    <div class="text-lg font-bold font-mono text-blue-400">\${Math.round(hoursLeftToDeadline)} hrs left</div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm font-semibold pt-2">
+                                <a href="https://www.google.com/travel/flights?q=flights+from+\${encodeURIComponent(formattedName)}+to+Washington+DC+on+\${flightDateStr}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                    <span>✈️ Flight Search (\${flightDateStr})</span>
+                                    <span class="text-xs text-slate-400">Google Flights ↗</span>
+                                </a>
+                                <a href="https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=Washington,+DC" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                    <span>🚗 Driving Route & Gas Stations</span>
+                                    <span class="text-xs text-slate-400">Google Maps ↗</span>
+                                </a>
+                                <a href="https://www.amtrak.com/deals/search?from=\${encodeURIComponent(formattedName)}&to=WAS" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                    <span>🚆 Amtrak Train Schedule</span>
+                                    <span class="text-xs text-slate-400">Amtrak ↗</span>
+                                </a>
+                                <a href="https://www.gasbuddy.com/tripcalculator" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                    <span>⛽ Exact Gas Buddy Calculator</span>
+                                    <span class="text-xs text-slate-400">GasBuddy ↗</span>
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                \`;
-            } else if (hoursLeft > 12) {
-                htmlContent = \`
-                    <div class="p-4 bg-amber-500/20 border border-amber-500/50 rounded-lg">
-                        <h3 class="text-xl font-bold text-amber-400 mb-2">Time is running short for DC!</h3>
-                        <p class="text-sm text-slate-300 mb-4">There might not be enough time to safely make it to the nation's capital. Head to your state capital instead!</p>
-                        
-                        <div class="flex flex-col gap-3">
-                            <a href="https://www.google.com/maps/search/state+capital+near+\${encodedLocation}" target="_blank" class="flex items-center justify-center gap-2 p-4 bg-slate-800 rounded hover:bg-slate-700 transition text-center font-bold">
-                                🏛️ Route to your State Capital
-                            </a>
-                        </div>
-                    </div>
-                \`;
-            } else {
-                htmlContent = \`
-                    <div class="p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
-                        <h3 class="text-xl font-bold text-red-400 mb-2">Time is up for long-distance travel.</h3>
-                        <p class="text-sm text-slate-300 mb-4">If you can't make it to a capital in time, you can still make an impact exactly where you are.</p>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <a href="https://en.wikipedia.org/wiki/Strike_action" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-slate-800 rounded hover:bg-slate-700 transition font-bold">
-                                ✊ Learn about Strikes
-                            </a>
-                            <a href="https://en.wikipedia.org/wiki/Boycott" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-slate-800 rounded hover:bg-slate-700 transition font-bold">
-                                🚫 Learn about Boycotts
-                            </a>
-                        </div>
-                    </div>
-                \`;
+                    \`;
+                } else {
+                    // Option B: Not enough time for DC. Check State Capital feasibility
+                    const capital = userState && STATE_CAPITALS[userState] ? STATE_CAPITALS[userState] : STATE_CAPITALS["VA"];
+                    const capMiles = calculateRoadDistance(userLat, userLon, capital.lat, capital.lon);
+                    const capDriveHours = Math.round((capMiles / 62) * 10) / 10;
+
+                    if (hoursLeftToDeadline >= capDriveHours) {
+                        resultsDiv.innerHTML = \`
+                            <div class="p-5 bg-amber-950/60 border border-amber-500/40 rounded-xl space-y-4">
+                                <div>
+                                    <h3 class="text-xl font-bold text-amber-400">Not Enough Time for DC — Head to Your State Capital</h3>
+                                    <p class="text-xs text-slate-300">Driving to DC requires <strong>\${totalJourneyHours} hrs</strong> (including rest), but only <strong>\${Math.round(hoursLeftToDeadline)} hrs</strong> remain. Mobilize at <strong>\${capital.name}</strong> instead.</p>
+                                </div>
+
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center my-2">
+                                    <div class="bg-slate-800/80 p-2 rounded border border-slate-700">
+                                        <div class="text-xs text-slate-400">Distance</div>
+                                        <div class="text-lg font-bold font-mono">\${capMiles} miles</div>
+                                    </div>
+                                    <div class="bg-slate-800/80 p-2 rounded border border-slate-700">
+                                        <div class="text-xs text-slate-400">Capital Drive Time</div>
+                                        <div class="text-lg font-bold font-mono">\${capDriveHours} hrs</div>
+                                    </div>
+                                    <div class="bg-slate-800/80 p-2 rounded border border-slate-700">
+                                        <div class="text-xs text-slate-400">Est. Gas</div>
+                                        <div class="text-lg font-bold font-mono text-amber-400">\$\${Math.round((capMiles/25)*3.65)}</div>
+                                    </div>
+                                </div>
+
+                                <a href="https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=\${encodeURIComponent(capital.name)}" target="_blank" class="block text-center p-3 bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold rounded transition">
+                                    🏛️ Directions to \${capital.name} State Capitol
+                                </a>
+                            </div>
+                        \`;
+                    } else {
+                        // Option C: Not enough time for State Capital. Strikes & Boycotts.
+                        resultsDiv.innerHTML = \`
+                            <div class="p-5 bg-red-950/60 border border-red-500/40 rounded-xl space-y-4">
+                                <div>
+                                    <h3 class="text-xl font-bold text-red-400">Insufficient Travel Time — Organize Locally</h3>
+                                    <p class="text-xs text-slate-300">You cannot safely reach DC or \${capital.name} before September 22. Focus efforts on economic action and local non-cooperation.</p>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                                    <a href="https://workerorganizing.org/resources/" target="_blank" class="p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-left transition">
+                                        <div class="font-bold text-red-400">✊ Workplace & Strike Action Guide</div>
+                                        <div class="text-xs text-slate-400 mt-1">Emergency workplace organizing resources & legal protections via EWOC.</div>
+                                    </a>
+                                    <a href="https://www.industrialworkers.org/" target="_blank" class="p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-left transition">
+                                        <div class="font-bold text-red-400">🚫 National Boycott Directory</div>
+                                        <div class="text-xs text-slate-400 mt-1">Coordinated consumer actions and strategic local economic withholding.</div>
+                                    </a>
+                                </div>
+                            </div>
+                        \`;
+                    }
+                }
+
+            } catch (err) {
+                resultsDiv.innerHTML = \`<div class="p-4 bg-red-900/50 border border-red-500 text-red-200 text-sm rounded-lg">\${err.message || "Calculation failed."}</div>\`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Calculate Trip';
+                resultsDiv.classList.remove('hidden');
             }
-
-            resultsDiv.innerHTML = htmlContent;
-            resultsDiv.classList.remove('hidden');
-            resultsDiv.classList.add('flex');
         });
     </script>
 </body>
@@ -189,9 +334,7 @@ export default {
     `;
 
     return new Response(html, {
-      headers: {
-        "content-type": "text/html;charset=UTF-8",
-      },
+      headers: { "content-type": "text/html;charset=UTF-8" },
     });
   },
 };
