@@ -1,5 +1,71 @@
 export default {
   async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const path = url.pathname.split('/')
+    // =========================================================================
+    // 1. SERVER-SIDE API ENDPOINT: Exact Craigslist Subdomain Resolution
+    // =========================================================================
+    if (path[1]==="api" && path[2]==="craigslist") {
+      const lat = parseFloat(url.searchParams.get("lat") ?? path[3]);
+      const lon = parseFloat(url.searchParams.get("lon") ?? path[4]);
+      const invalid = new Response(JSON.stringify({ error: "Invalid coordinates" }), {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        });
+      if (isNaN(lat) || isNaN(lon)) {
+        return invalid
+      }
+      // Westernmost (Min Longitude): -124.77° (or -124.8°)
+      // Southernmost (Min Latitude): 24.52° (or 24.5°)
+      // Easternmost (Max Longitude): -66.95° (or -67.0°)
+      // Northernmost (Max Latitude): 49.38° (or 49.4°)
+      if (-124.8 > lon || lon > -67) {
+        return invalid
+      }
+      if (24.5 > lat || lat > 49.4) {
+        return invalid
+      }
+      const rideshareURL = (subdomain) => `https://${subdomain}.craigslist.org/search/rid`
+      const ret = (sub) => new Response(JSON.stringify({ subdomain: sub, rideshareUrl: rideshareURL(sub) }), { headers: {"content-type":"application/json"}})
+      try {
+        // Fetch all ~400+ Craigslist markets with 24-hour Cloudflare Edge caching
+        const clRes = await fetch("https://reference.craigslist.org/Areas", {
+          cf: { cacheTtl: 86400, cacheEverything: true },
+        });
+        const areas = await clRes.json();
+
+        let nearestSubdomain = "washingtondc";
+        let minDistance = Infinity;
+
+        // Geodetic Haversine calculation across ALL 400+ active US markets
+        for (const area of areas) {
+          if (area.Country === "US" && area.Hostname && area.Latitude && area.Longitude) {
+            const mLat = parseFloat(area.Latitude);
+            const mLon = parseFloat(area.Longitude);
+            const slug = area.Hostname.trim().lower();
+
+            const dLat = ((mLat - lat) * Math.PI) / 180;
+            const dLon = ((mLon - lon) * Math.PI) / 180;
+            const a =
+              Math.sin(dLat / 2) ** 2 +
+              Math.cos((lat * Math.PI) / 180) *
+                Math.cos((mLat * Math.PI) / 180) *
+                Math.sin(dLon / 2) ** 2;
+            const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            if (dist < minDistance) {
+              minDistance = dist;
+              nearestSubdomain = slug;
+            }
+          }
+        }
+
+        return ret(nearestSubdomain)
+      } catch (err) {
+        return ret("washingtondc")
+      }
+    }
+    
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -205,7 +271,7 @@ export default {
             const data = await response.json();
             
             if (data.code !== 'Ok') {
-                return { miles: 3600000000, hours: 1000000 }
+                return { miles: 0, hours: Infinity }
                 //throw new Error("No driving route found (Are you in Hawaii?)");
             }
             
@@ -240,7 +306,11 @@ export default {
                 const userLon = parseFloat(place.lon);
                 const userState = place.address.state_code ? place.address.state_code.toUpperCase() : place.address.state ? STATE_NAME_TO_CODE[place.address.state] : null;
                 const formattedName = \`\${place.address.city || place.address.town || place.name}, \${userState || ''}\`;
-                
+                let clData = await fetch(\`/api/craigslist/\${userLat}/\${userLon}\`)
+                let clRideshare = ''
+                if (clData.ok) {
+                  clRideshare = JSON.parse(clData.json()).rideshareUrl
+                }
                 // For Craigslist query (restrict search strictly to rideshare boards)
                 const clSearchName = place.address.city || place.address.town || place.name;
 
@@ -249,7 +319,7 @@ export default {
                 const hoursLeftToDeadline = (targetDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
                 // Calculations to DC
-                const dcMiles = calculateRoadDistance(userLat, userLon, DC_COORDS.lat, DC_COORDS.lon);
+                const dcMiles = await getActualDriveData(userLat, userLon) //calculateRoadDistance(userLat, userLon, DC_COORDS.lat, DC_COORDS.lon);
                 const driveHours = Math.round((dcMiles / 62) * 10) / 10; // Avg 62 mph
                 const overnightsNeeded = Math.floor(driveHours / 9); // Night rest for every 9 hrs drive
                 const totalJourneyHours = driveHours + (overnightsNeeded * 15);
@@ -314,7 +384,7 @@ export default {
                                     <span>🚆 Amtrak Train Schedule</span>
                                     <span class="text-xs text-slate-400">Amtrak ↗</span>
                                 </a>
-                                <a href="https://www.google.com/search?q=site:craigslist.org+rideshare+\${encodeURIComponent(clSearchName)}+\${userState || ''}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                <a href="\${clRideshare}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
                                     <span>🤝 Local Rideshare Board</span>
                                     <span class="text-xs text-slate-400">Craigslist ↗</span>
                                 </a>
