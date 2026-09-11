@@ -15,10 +15,6 @@ export default {
       if (isNaN(lat) || isNaN(lon)) {
         return invalid
       }
-      // Westernmost (Min Longitude): -124.77° (or -124.8°)
-      // Southernmost (Min Latitude): 24.52° (or 24.5°)
-      // Easternmost (Max Longitude): -66.95° (or -67.0°)
-      // Northernmost (Max Latitude): 49.38° (or 49.4°)
       if (-124.8 > lon || lon > -67) {
         return invalid
       }
@@ -37,12 +33,11 @@ export default {
         let nearestSubdomain = "washingtondc";
         let minDistance = Infinity;
 
-        // Geodetic Haversine calculation across ALL 400+ active US markets
         for (const area of areas) {
           if (area.Country === "US" && area.Hostname && area.Latitude && area.Longitude) {
             const mLat = parseFloat(area.Latitude);
             const mLon = parseFloat(area.Longitude);
-            const slug = area.Hostname.trim().lower();
+            const slug = area.Hostname.trim().toLowerCase(); // fixed .lower() to .toLowerCase()
 
             const dLat = ((mLat - lat) * Math.PI) / 180;
             const dLon = ((mLon - lon) * Math.PI) / 180;
@@ -80,7 +75,6 @@ export default {
             font-family: 'Inter', sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
-                /* Background Image Implementation */
             background-image: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), 
                               url('https://images.unsplash.com/photo-1501466044931-62695aada8e9?auto=format&fit=crop&q=80&w=2000');
             background-size: cover;
@@ -100,7 +94,7 @@ export default {
         .unit-tag {
             position: relative;
             display: inline-block;
-            margin-right: 0.5em; /* Space for the tag */
+            margin-right: 0.5em;
             width: 2em;
             padding-top: 0.5em;
             padding-bottom: 0.5em;
@@ -112,8 +106,6 @@ export default {
             right: -2em;
             width: 4em;
             height: 1em;
-            
-            /* Tag Styling */
             font-size: 0.3em;
             color: gray;
             transform: rotate(90deg);
@@ -157,7 +149,6 @@ export default {
                 </button>
             </form>
 
-            <!-- DYNAMIC RESULTS -->
             <div id="results" class="mt-6 text-left hidden flex-col gap-4"></div>
         </div>
     </main>
@@ -166,7 +157,6 @@ export default {
         const targetDate = new Date(Date.UTC(2026, 8, 22, 13, 0, 0));
         const DC_COORDS = { lat: 38.8951, lon: -77.0364, name: "Washington, DC" };
 
-        // State Name to Code DB
         const STATE_NAME_TO_CODE = {
             "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR",
             "California": "CA", "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE",
@@ -183,7 +173,6 @@ export default {
             "Wisconsin": "WI", "Wyoming": "WY"
         }
         
-        // State Capitals Database
         const STATE_CAPITALS = {
             "AL": { name: "Montgomery, AL", lat: 32.3792, lon: -86.3077 },
             "AK": { name: "Juneau, AK", lat: 58.3019, lon: -134.4197 },
@@ -237,7 +226,6 @@ export default {
             "WY": { name: "Cheyenne, WY", lat: 41.1400, lon: -104.8202 }
         };
 
-        // Countdown Timer Logic
         const countdownEl = document.getElementById('countdown');
         function updateCountdown() {
             const now = new Date().getTime();
@@ -255,14 +243,13 @@ export default {
             const digit = (num) => String(num).padStart(2, '0');
             const seg = (time, unit, long=false) => \`<div class="unit-tag\${long?" long ":' '}\${unit.toLowerCase()}" data-unit="\${unit}">\${digit(time)}</div>\`;
 
-            countdownEl.innerHTML = \`\${seg(days, 'Days')}\${seg(hours, 'Hours')}\${seg(minutes, 'Minutes',1)}\${seg(seconds, 'Seconds',1)}\`           
+            countdownEl.innerHTML = \`\${seg(days, 'Days')}\${seg(hours, 'Hours')}\${seg(minutes, 'Minutes',1)}\${seg(seconds, 'Seconds',1)}\`            
         }
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
-        // Distance Calculation (Haversine formula * 1.3 driving factor)
         function calculateRoadDistance(lat1, lon1, lat2, lon2) {
-            const R = 3958.8; // Miles
+            const R = 3958.8; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -270,8 +257,9 @@ export default {
                       Math.sin(dLon/2) * Math.sin(dLon/2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             const straightMiles = R * c;
-            return Math.round(straightMiles * 1.3); // 30% winding road correction
+            return Math.round(straightMiles * 1.3); 
         }
+
         async function getActualDriveData(startLat, startLon) {
             const url = \`https://router.project-osrm.org/route/v1/driving/\${startLon},\${startLat};\${DC_COORDS.lon},\${DC_COORDS.lat}?overview=false\`;
             const response = await fetch(url);
@@ -279,16 +267,14 @@ export default {
             
             if (data.code !== 'Ok') {
                 return { miles: 0, hours: Infinity }
-                //throw new Error("No driving route found (Are you in Hawaii?)");
             }
             
             return {
-                miles: (data.routes[0].distance * 0.000621371).toFixed(1),
-                hours: (data.routes[0].duration / 3600).toFixed(1)
+                miles: parseFloat((data.routes[0].distance * 0.000621371).toFixed(1)),
+                hours: parseFloat((data.routes[0].duration / 3600).toFixed(1))
             };
         }
 
-        // Form Handler
         document.getElementById('travel-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const input = document.getElementById('location').value.trim();
@@ -300,7 +286,7 @@ export default {
             resultsDiv.classList.add('hidden');
 
             try {
-                // Free Geocoding via OpenStreetMap
+                // Free Geocoding
                 const geoRes = await fetch(\`https://nominatim.openstreetmap.org/search?q=\${encodeURIComponent(input)}&countrycodes=us&format=json&addressdetails=1\`);
                 const geoData = await geoRes.json();
 
@@ -313,39 +299,46 @@ export default {
                 const userLon = parseFloat(place.lon);
                 const userState = place.address.state_code ? place.address.state_code.toUpperCase() : place.address.state ? STATE_NAME_TO_CODE[place.address.state] : null;
                 const formattedName = \`\${place.address.city || place.address.town || place.name}, \${userState || ''}\`;
+                
+                // FIXED CRAIGSLIST PROMISE ERROR
                 let clData = await fetch(\`/api/craigslist/\${userLat}/\${userLon}\`)
                 let clRideshare = ''
+                let clSubdomain = 'craigslist'
                 if (clData.ok) {
-                  clRideshare = JSON.parse(clData.json()).rideshareUrl
+                  const clJson = await clData.json(); // Wait for promise to resolve
+                  clRideshare = clJson.rideshareUrl;
+                  clSubdomain = clJson.subdomain;
                 }
-                // For Craigslist query (restrict search strictly to rideshare boards)
-                const clSearchName = place.address.city || place.address.town || place.name;
 
-                // Compute time remaining vs drive requirements
                 const now = new Date();
                 const hoursLeftToDeadline = (targetDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-                // Calculations to DC
-                const dcMiles = await getActualDriveData(userLat, userLon) //calculateRoadDistance(userLat, userLon, DC_COORDS.lat, DC_COORDS.lon);
-                const driveHours = Math.round((dcMiles / 62) * 10) / 10; // Avg 62 mph
-                const overnightsNeeded = Math.floor(driveHours / 9); // Night rest for every 9 hrs drive
-                const totalJourneyHours = driveHours + (overnightsNeeded * 15);
-                const gasCost = Math.round((dcMiles / 25) * 4.268); // 25 MPG @ $4.268/gal
+                // FIXED NaN CALCULATION ERROR (Destructuring object properties correctly)
+                const routeData = await getActualDriveData(userLat, userLon);
+                let dcMiles = routeData.miles;
+                let driveHours = routeData.hours;
+                
+                // Fallback to Haversine if no driving route exists (e.g. Hawaii)
+                if (dcMiles === 0) {
+                    dcMiles = calculateRoadDistance(userLat, userLon, DC_COORDS.lat, DC_COORDS.lon);
+                    driveHours = Math.round((dcMiles / 62) * 10) / 10;
+                }
 
-                // Date targets (Day before event)
+                const overnightsNeeded = Math.floor(driveHours / 9); 
+                const totalJourneyHours = driveHours + (overnightsNeeded * 15);
+                const gasCost = Math.round((dcMiles / 25) * 4.268); 
+
                 const targetYear = targetDate.getFullYear();
                 const targetMonth = String(targetDate.getMonth() + 1).padStart(2, '0');
                 const flightDateStr = \`\${targetYear}-\${targetMonth}-21\`; 
 
-                // Render logic
                 if (hoursLeftToDeadline >= totalJourneyHours) {
-                    // Option A: Enough time for DC
                     resultsDiv.innerHTML = \`
                         <div class="p-5 bg-emerald-950/60 border border-emerald-500/40 rounded-xl space-y-4">
                             <div class="flex items-center justify-between border-b border-emerald-800/50 pb-3">
                                 <div>
                                     <h3 class="text-xl font-bold text-emerald-400">Route Feasible: Washington, DC</h3>
-                                    <p class="text-xs text-slate-300">Origin: <strong>\${formattedName}</strong> (\${dcMiles} miles to DC)</p>
+                                    <p class="text-xs text-slate-300">Origin: <strong>\${formattedName}</strong> (\${Math.round(dcMiles)} miles to DC)</p>
                                 </div>
                                 <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 font-mono text-xs rounded-full font-bold">Time Available</span>
                             </div>
@@ -370,7 +363,7 @@ export default {
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm font-semibold pt-2">
-                            
+                                
                                 <a href="https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=Washington,+DC" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
                                     <span>🚗 Driving Route & Gas Stops</span>
                                     <span class="text-xs text-slate-400">Google Maps ↗</span>
@@ -383,23 +376,22 @@ export default {
                                     <span>✈️ Flight Search (\${flightDateStr})</span>
                                     <span class="text-xs text-slate-400">Google Flights ↗</span>
                                 </a>
-                                <a href="https://www.wanderu.com/en-us/depart/\${encodeURIComponent(formattedName)}/Washington%2C%20DC%2C%20USA/\${flightDateStr}/" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
-                                    <span>🚌 Bus Routes (Greyhound/etc)</span>
-                                    <span class="text-xs text-slate-400">Wanderu ↗</span>
+                                <a href="https://www.rome2rio.com/s/\${encodeURIComponent(formattedName)}/Washington-DC" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                    <span>🚌 Check Buses & Trains</span>
+                                    <span class="text-xs text-slate-400">Rome2Rio ↗</span>
                                 </a>
-                                <a href="https://www.amtrak.com/deals/search?from=\${encodeURIComponent(formattedName)}&to=WAS" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
-                                    <span>🚆 Amtrak Train Schedule</span>
-                                    <span class="text-xs text-slate-400">Amtrak ↗</span>
+                                <a href="https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=Washington,+DC&travelmode=transit" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
+                                    <span>🚆 Public Transit Routing</span>
+                                    <span class="text-xs text-slate-400">Google Maps ↗</span>
                                 </a>
                                 <a href="\${clRideshare}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition">
-                                    <span>🤝 Local Rideshare Board</span>
+                                    <span>🤝 Local Rideshares (\${clSubdomain})</span>
                                     <span class="text-xs text-slate-400">Craigslist ↗</span>
                                 </a>
                             </div>
                         </div>
                     \`;
                 } else {
-                    // Option B: Not enough time for DC. Check State Capital feasibility
                     const capital = userState && STATE_CAPITALS[userState] ? STATE_CAPITALS[userState] : STATE_CAPITALS["VA"];
                     const capMiles = calculateRoadDistance(userLat, userLon, capital.lat, capital.lon);
                     const capDriveHours = Math.round((capMiles / 62) * 10) / 10;
@@ -423,7 +415,7 @@ export default {
                                     </div>
                                     <div class="bg-slate-800/80 p-2 rounded border border-slate-700">
                                         <div class="text-xs text-slate-400">Est. Gas</div>
-                                        <div class="text-lg font-bold font-mono text-amber-400">\$\${Math.round((capMiles/25)*3.65)}</div>
+                                        <div class="text-lg font-bold font-mono text-amber-400">\$\${Math.round((capMiles/25)*4.268)}</div>
                                     </div>
                                 </div>
 
@@ -432,15 +424,14 @@ export default {
                                         <span>🏛️ Directions to \${capital.name}</span>
                                         <span class="text-xs opacity-75">Google Maps ↗</span>
                                     </a>
-                                    <a href="https://www.google.com/search?q=site:craigslist.org+rideshare+\${encodeURIComponent(clSearchName)}+\${userState || ''}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition border border-slate-700">
-                                        <span>🤝 Local Rideshare Board</span>
+                                    <a href="\${clRideshare}" target="_blank" class="flex items-center justify-between p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 transition border border-slate-700">
+                                        <span>🤝 Local Rideshares (\${clSubdomain})</span>
                                         <span class="text-xs text-slate-400">Craigslist ↗</span>
                                     </a>
                                 </div>
                             </div>
                         \`;
                     } else {
-                        // Option C: Not enough time for State Capital. Strikes & Boycotts.
                         resultsDiv.innerHTML = \`
                             <div class="p-5 bg-red-950/60 border border-red-500/40 rounded-xl space-y-4">
                                 <div>
