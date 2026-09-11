@@ -122,7 +122,7 @@ export default {
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 text-center">
 
-    <main class="w-full max-w-6xl mx-auto flex flex-col items-center gap-8 my-8">
+    <main class="w-full max-w-6xl max-w-6xl mx-auto flex flex-col items-center gap-8 my-8">
         
         <!-- HERO COUNTDOWN --> 
         <div class="flex flex-col items-center">
