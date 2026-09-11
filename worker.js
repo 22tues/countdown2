@@ -124,7 +124,7 @@ export default {
 
     <main class="w-full max-w-6xl mx-auto flex flex-col items-center gap-8 my-8">
         
-        <!-- HERO COUNTDOWN -->
+        <!-- HERO COUNTDOWN --> 
         <div class="flex flex-col items-center">
             <h1 class="text-xl md:text-2xl font-bold text-slate-400 uppercase tracking-widest mb-2">Time until September 22</h1>
             <div id="countdown" class="hero-text font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-teal-300 to-emerald-400 font-mono drop-shadow-lg">
