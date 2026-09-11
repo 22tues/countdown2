@@ -199,6 +199,21 @@ export default {
             const straightMiles = R * c;
             return Math.round(straightMiles * 1.3); // 30% winding road correction
         }
+        async function getActualDriveData(startLat, startLon) {
+            const url = \`https://router.project-osrm.org/route/v1/driving/\${startLon},\${startLat};\${DC_COORDS.lon},\${DC_COORDS.lat}?overview=false\`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.code !== 'Ok') {
+                return { miles: 3600000000, hours: 1000000 }
+                //throw new Error("No driving route found (Are you in Hawaii?)");
+            }
+            
+            return {
+                miles: (data.routes[0].distance * 0.000621371).toFixed(1),
+                hours: (data.routes[0].duration / 3600).toFixed(1)
+            };
+        }
 
         // Form Handler
         document.getElementById('travel-form').addEventListener('submit', async (e) => {
@@ -223,7 +238,7 @@ export default {
                 const place = geoData[0];
                 const userLat = parseFloat(place.lat);
                 const userLon = parseFloat(place.lon);
-                const userState = place.address.state_code ? place.address.state_code.toUpperCase() : null;
+                const userState = place.address.state_code ? place.address.state_code.toUpperCase() : place.address.state ? STATE_NAME_TO_CODE[place.address.state] : null;
                 const formattedName = \`\${place.address.city || place.address.town || place.name}, \${userState || ''}\`;
                 
                 // For Craigslist query (restrict search strictly to rideshare boards)
