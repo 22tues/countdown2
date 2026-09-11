@@ -122,7 +122,7 @@ export default {
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 text-center">
 
-    <main class="w-full max-w-4xl mx-auto flex flex-col items-center gap-8 my-8">
+    <main class="w-full max-w-6xl mx-auto flex flex-col items-center gap-8 my-8">
         
         <!-- HERO COUNTDOWN -->
         <div class="flex flex-col items-center">
@@ -317,12 +317,6 @@ export default {
                 const routeData = await getActualDriveData(userLat, userLon);
                 let dcMiles = routeData.miles;
                 let driveHours = routeData.hours;
-                
-                // Fallback to Haversine if no driving route exists (e.g. Hawaii)
-                if (dcMiles === 0) {
-                    dcMiles = calculateRoadDistance(userLat, userLon, DC_COORDS.lat, DC_COORDS.lon);
-                    driveHours = Math.round((dcMiles / 62) * 10) / 10;
-                }
 
                 const overnightsNeeded = Math.floor(driveHours / 9); 
                 const totalJourneyHours = driveHours + (overnightsNeeded * 15);
