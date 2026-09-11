@@ -80,6 +80,13 @@ export default {
             font-family: 'Inter', sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
+                /* Background Image Implementation */
+            background-image: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), 
+                              url('https://images.unsplash.com/photo-1501466044931-62695aada8e9?auto=format&fit=crop&q=80&w=2000');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
         }
         .hero-text {
             font-size: clamp(2.5rem, 8vw, 7rem);
