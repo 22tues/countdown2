@@ -232,16 +232,16 @@ export default {
             </div>
         \`;
 
-        const createLink = (url, title, badge, bgClass = 'bg-slate-800 hover:bg-slate-700 text-slate-200', borderClass = '') => \`
+        const createLink = (url, title, badge, icon = '', bgClass = 'bg-slate-800 hover:bg-slate-700 text-slate-200', borderClass = '') => \`
             <a href="\${url}" target="_blank" class="flex items-center justify-between p-3 \${bgClass} rounded transition \${borderClass}">
-                <span>\${title}</span>
+                <span class="flex items-center gap-2"><span>\${icon}</span> <span>\${title}</span></span>
                 <span class="text-xs \${bgClass.includes('text-slate-900') ? 'opacity-75' : 'text-slate-400'}">\${badge}</span>
             </a>
         \`;
 
-        const createActionCard = (url, title, description) => \`
-            <a href="\${url}" target="_blank" class="p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-left transition">
-                <div class="font-bold text-red-400">\${title}</div>
+        const createActionCard = (url, title, description, icon = '') => \`
+            <a href="\${url}" target="_blank" class="p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-left transition block">
+                <div class="font-bold text-red-400 flex items-center gap-2"><span>\${icon}</span> <span>\${title}</span></div>
                 <div class="text-xs text-slate-400 mt-1">\${description}</div>
             </a>
         \`;
@@ -297,7 +297,7 @@ export default {
             const btn = document.getElementById('submit-btn');
             const resultsDiv = document.getElementById('results');
             btn.disabled = true;
-            btn.innerHTML = 'Calculating...';
+            btn.innerHTML = '⚙️ Calculating...';
             resultsDiv.classList.add('hidden');
             
             try {
@@ -354,8 +354,9 @@ export default {
                 const renderCapitalCard = (isDCFeasible = false) => \`
                     <div class="p-5 bg-amber-950/60 border border-amber-500/40 rounded-xl space-y-4">
                         <div>
-                            <h3 class="text-xl font-bold text-amber-400">
-                                \${isDCFeasible ? 'Alternative Option: Mobilize at State Capital' : 'Not Enough Time for DC — Head to Your State Capital'}
+                            <h3 class="text-xl font-bold text-amber-400 flex items-center gap-2">
+                                <span>🏛️</span>
+                                <span>\${isDCFeasible ? 'Alternative Option: Mobilize at State Capital' : 'Not Enough Time for DC — Head to Your State Capital'}</span>
                             </h3>
                             <p class="text-xs text-slate-300">
                                 \${isDCFeasible 
@@ -369,8 +370,8 @@ export default {
                             \${createStatBox('Est. Gas', \`$\${capGas}\`, 'text-amber-400')}
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm font-semibold pt-2">
-                            \${createLink(\`https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=\${encodeURIComponent(capital.name)}\`, \`Directions to \${capital.name}\`, 'Google Maps', 'bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold')}
-                            \${createLink(clRideshare, \`Local Rideshares (\${clSubdomain})\`, 'Craigslist', 'bg-slate-800 hover:bg-slate-700 text-slate-200', 'border border-slate-700')}
+                            \${createLink(\`https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=\${encodeURIComponent(capital.name)}\`, \`Directions to \${capital.name}\`, 'Google Maps', '🗺️', 'bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold')}
+                            \${createLink(clRideshare, \`Local Rideshares (\${clSubdomain})\`, 'Craigslist', '🚖', 'bg-slate-800 hover:bg-slate-700 text-slate-200', 'border border-slate-700')}
                         </div>
                     </div>
                 \`;
@@ -378,8 +379,9 @@ export default {
                 const renderLocalActionCard = (isTravelFeasible = false) => \`
                     <div class="p-5 bg-red-950/60 border border-red-500/40 rounded-xl space-y-4">
                         <div>
-                            <h3 class="text-xl font-bold text-red-400">
-                                \${isTravelFeasible ? 'Local Economic Action & Strike Organizing' : 'Insufficient Travel Time — Organize Locally'}
+                            <h3 class="text-xl font-bold text-red-400 flex items-center gap-2">
+                                <span>✊</span>
+                                <span>\${isTravelFeasible ? 'Local Economic Action & Strike Organizing' : 'Insufficient Travel Time — Organize Locally'}</span>
                             </h3>
                             <p class="text-xs text-slate-300">
                                 \${isTravelFeasible 
@@ -388,8 +390,8 @@ export default {
                             </p>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                            \${createActionCard('https://workerorganizing.org/resources/', 'Workplace & Strike Action Guide', 'Emergency workplace organizing resources & legal protections via EWOC.')}
-                            \${createActionCard('https://www.industrialworkers.org/', 'National Boycott Directory', 'Coordinated consumer actions and strategic local economic withholding.')}
+                            \${createActionCard('https://workerorganizing.org/resources/', 'Workplace & Strike Action Guide', 'Emergency workplace organizing resources & legal protections via EWOC.', '🪧')}
+                            \${createActionCard('https://www.industrialworkers.org/', 'National Boycott Directory', 'Coordinated consumer actions and strategic local economic withholding.', '🚫')}
                         </div>
                     </div>
                 \`;
@@ -397,7 +399,6 @@ export default {
                 let cardsHtml = '';
 
                 if (hoursLeftToDeadline >= totalJourneyHours) {
-                    // Option 1: DC Available -> Render DC + Capital + Local Actions
                     const statsHtml = isDrivable ? [
                         createStatBox('Drive Time', \`\${driveHours} hrs\`),
                         createStatBox('Overnight Stops', \`\${overnightsNeeded} night\${overnightsNeeded === 1 ? '' : 's'}\`),
@@ -413,22 +414,25 @@ export default {
                     const rome2rioUrl = \`https://www.rome2rio.com/s/\${encodeURIComponent(formattedName)}/Washington-DC\`;
 
                     const linksHtml = isDrivable ? [
-                        createLink(\`https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=Washington,+DC\`, 'Driving Route & Gas Stops', 'Google Maps'),
-                        createLink('https://www.gasbuddy.com/tripcostcalculator', 'Exact Gas Calculator', 'GasBuddy'),
-                        createLink(flightUrl, \`Flight Search (\${flightDateStr})\`, 'Google Flights'),
-                        createLink(rome2rioUrl, 'Check Buses & Trains', 'Rome2Rio'),
-                        createLink(\`https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=Washington,+DC&travelmode=transit\`, 'Public Transit Routing', 'Google Maps'),
-                        createLink(clRideshare, \`Local Rideshares (\${clSubdomain})\`, 'Craigslist')
+                        createLink(\`https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=Washington,+DC\`, 'Driving Route & Gas Stops', 'Google Maps', '🚗'),
+                        createLink('https://www.gasbuddy.com/tripcostcalculator', 'Exact Gas Calculator', 'GasBuddy', '⛽'),
+                        createLink(flightUrl, \`Flight Search (\${flightDateStr})\`, 'Google Flights', '✈️'),
+                        createLink(rome2rioUrl, 'Check Buses & Trains', 'Rome2Rio', '🚆'),
+                        createLink(\`https://www.google.com/maps/dir/?api=1&origin=\${userLat},\${userLon}&destination=Washington,+DC&travelmode=transit\`, 'Public Transit Routing', 'Google Maps', '🚇'),
+                        createLink(clRideshare, \`Local Rideshares (\${clSubdomain})\`, 'Craigslist', '🚖')
                     ].join('') : [
-                        createLink(flightUrl, \`Flight Search (\${flightDateStr})\`, 'Google Flights'),
-                        createLink(rome2rioUrl, 'Public Transport & Flights', 'Rome2Rio')
+                        createLink(flightUrl, \`Flight Search (\${flightDateStr})\`, 'Google Flights', '✈️'),
+                        createLink(rome2rioUrl, 'Public Transport & Flights', 'Rome2Rio', '🚆')
                     ].join('');
 
                     const dcCard = \`
                         <div class="p-5 bg-emerald-950/60 border border-emerald-500/40 rounded-xl space-y-4">
                             <div class="flex items-center justify-between border-b border-emerald-800/50 pb-3">
                                 <div>
-                                    <h3 class="text-xl font-bold text-emerald-400">Route Feasible: Washington, DC</h3>
+                                    <h3 class="text-xl font-bold text-emerald-400 flex items-center gap-2">
+                                        <span>📍</span>
+                                        <span>Route Feasible: Washington, DC</span>
+                                    </h3>
                                     <p class="text-xs text-slate-300">Origin: <strong>\${formattedName}</strong> \${isDrivable ? '(' + Math.round(dcMiles) + ' miles to DC)' : ''}</p>
                                 </div>
                                 <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 font-mono text-xs rounded-full font-bold">Time Available</span>
@@ -445,10 +449,8 @@ export default {
 
                     cardsHtml = dcCard + renderCapitalCard(true) + renderLocalActionCard(true);
                 } else if (hoursLeftToDeadline >= capDriveHours) {
-                    // Option 2: DC Not Feasible, Capital Feasible -> Render Capital + Local Actions
                     cardsHtml = renderCapitalCard(false) + renderLocalActionCard(true);
                 } else {
-                    // Option 3: Neither Feasible -> Render Local Actions
                     cardsHtml = renderLocalActionCard(false);
                 }
 
