@@ -1,5 +1,6 @@
 export default {
   async fetch(request, env, ctx) {
+    const gaspergallon = 4.306
     const url = new URL(request.url);
     const path = url.pathname.split('/')
     
@@ -319,7 +320,7 @@ export default {
                 if (isDrivable) {
                     overnightsNeeded = Math.floor(driveHours / 9); 
                     totalJourneyHours = driveHours + (overnightsNeeded * 15);
-                    gasCost = Math.round((dcMiles / 25) * 4.268); 
+                    gasCost = Math.round((dcMiles / 25) * ${gaspergallon}); 
                 } else {
                     // If they can't drive overland (e.g. Hawaii to DC), assume they must fly.
                     // Flights from anywhere in the US to DC take 24 hours max.
@@ -437,7 +438,7 @@ export default {
                                     </div>
                                     <div class="bg-slate-800/80 p-2 rounded border border-slate-700">
                                         <div class="text-xs text-slate-400">Est. Gas</div>
-                                        <div class="text-lg font-bold font-mono text-amber-400">\$\${Math.round((capMiles/25)*4.268)}</div>
+                                        <div class="text-lg font-bold font-mono text-amber-400">\$\${Math.round((capMiles/25)*${gaspergallon})}</div>
                                     </div>
                                 </div>
 
