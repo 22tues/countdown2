@@ -89,7 +89,7 @@ export default {
             background-repeat: no-repeat;
         }
         .hero-text {
-            font-size: clamp(2.5rem, 8vw, 7rem);
+            font-size: clamp(1.5rem, 8vw, 7rem);
             line-height: 1.1;
         }
         .glass-panel {
@@ -129,7 +129,7 @@ export default {
         <!-- HERO COUNTDOWN -->
         <div class="flex flex-col items-center">
             <h1 class="text-xl md:text-2xl font-bold text-slate-400 uppercase tracking-widest mb-2">Time until September 22</h1>
-            <div id="countdown" class="hero-text font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-teal-300 to-emerald-400 font-mono">
+            <div id="countdown" class="hero-text font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-teal-300 to-emerald-400 font-mono box-decoration-clone">
                 00<span>Days</span><br/>00<span>Hours</span><br/>00<span>Minutes</span><br/>00<span>Seconds</span>
             </div>
         </div>
